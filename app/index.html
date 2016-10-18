@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Origin Trial Token, feature = Web Bluetooth, origin = https://sandro-k.github.io, expires = 2016-11-22 -->
+    <meta http-equiv="origin-trial" data-feature="Web Bluetooth" data-expires="2016-11-22"
+          content="Ah8vuReM/XE58IPndEXl+Y0F88HjqYDVdFol3x6iw7Etx9GbCJKmE+QZuSdyPAbAtNmfj7f9/AD4SQU/+UflxAAAAABYeyJvcmlnaW4iOiJodHRwczovL3NhbmRyby1rLmdpdGh1Yi5pbzo0NDMiLCJmZWF0dXJlIjoiV2ViQmx1ZXRvb3RoIiwiZXhwaXJ5IjoxNDc5ODM1MDMyfQ==">
+    <title>WebBluetooth Devfest HH 2016</title>
+
+    <link rel="import" href="elements/app-intro.html">
+    <link rel="import" href="bower_components/iron-icon/iron-icon.html">
+    <!--<link rel="import" href="bower_components/iron-icons/iron-icons.html">-->
+    <link rel="import" href="bower_components/iron-icons/device-icons.html">
+    <link rel="import" href="bower_components/neon-animation/neon-animatable.html">
+    <link rel="import" href="bower_components/paper-styles/paper-styles.html">
+    <link rel="import" href="bower_components/marked-element/marked-element.html">
+    <link rel="import" href="bower_components/prism-element/prism-highlighter.html">
+</head>
+
+<style is="custom-style">
+
+    code, pre {
+        color: #9f499b;
+        font-family: "Source Code Pro", Monaco, Menlo, Consolas, "Courier New", monospace
+    }
+
+    pre, .prettyprint {
+        /*background-color: #fafafa;*/
+        padding: 16px;
+    }
+
+    html {
+        @apply(--paper-font-common-base);
+    }
+
+    :root {
+        --slide-background-color-one: var(--paper-blue-500);
+        --slide-color-one: var(--paper-blue-500);
+    }
+
+    .title {
+        @apply(--paper-font-headline);
+        background: #FFFFFF;
+        position: absolute;
+        top: 10px;
+        left: 0;
+        padding: 0.5em;
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+    }
+
+    .content {
+        background: #FFFFFF;
+        padding: 1em;
+        border-radius: 2px;
+        max-height: 500px;
+        overflow-y: scroll;
+        @apply(--layout);
+        @apply(--layout-vertical);
+        @apply(--layout-center-center);
+    }
+
+    .content h1 {
+        @apply(--paper-font-headline);
+    }
+
+    .content li {
+        @apply(--paper-font-body1);
+        font-size: 1.2em;
+        padding: 0.5em 0;
+    }
+
+    .content li li {
+        font-size: 0.8em;
+    }
+
+    a {
+        color: #000000;
+    }
+
+
+    neon-animatable {
+        background: var(--slide-background-color-one);
+    }
+
+    ul {
+        margin: 0;
+    }
+
+    .big {
+        --iron-icon-height: 128px;
+        --iron-icon-width: 128px;
+        background: #3C6ED8;
+        color: #ffffff;
+        border-radius: 50%;
+    }
+
+    .with-space {
+        padding: 1em;
+    }
+
+    .with-space-margin {
+        margin: 1em;
+    }
+
+    .horizontal {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-center);
+    }
+
+    .space-right {
+        margin-right: 2em;
+    }
+
+    .gatt {
+        width: 400px;
+    }
+
+</style>
+
+<body>
+
+<prism-highlighter></prism-highlighter>
+
+<app-intro selected="0" no-indicator>
+
+    <neon-animatable main class="one" fit>
+        <h1 class="title">
+            Web Bluetooth
+        </h1>
+        <div class="content">
+            <div class="horizontal with-space">
+                <iron-icon class="big with-space-margin" icon="device:bluetooth"></iron-icon>
+
+                <img class="with-space-margin" width="128" height="128"
+                     src="https://www.w3.org/html/logo/downloads/HTML5_Logo_256.png" alt="">
+            </div>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main fit>
+        <h1 class="title">
+            About
+        </h1>
+        <div class="content">
+            <h1>Sandro Kock</h1>
+            <ul>
+                <li>Work - <a href="http://www.ssv-embedded.de/">SSV Software Systems</a></li>
+                <li>github - <a href="https://github.com/sandro-k">sandro-k</a></li>
+            </ul>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">
+            Demo
+        </h1>
+        <div class="content">
+            <h1>lets control a led light candle from the web browser</h1>
+            <a target="_blank" href="https://sandro-k.github.io/playbulb-polymer/app/">
+                <img src="http://haus-garten.tips/wp-content/uploads/2015/11/MiPow-Playbulb-Candle.gif" alt="">
+            </a>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">What is the Web Bluetooth API</h1>
+        <div class="content">
+            <ul>
+                <li>is a Webbrowser API to connect to Bluetooth LE devices</li>
+                <li>the specification is still very active (weekly/monthly updates)</li>
+                <li><a target="_blank" href="https://webbluetoothcg.github.io/web-bluetooth/">WebBluetooth Spec</a></li>
+            </ul>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Where can WebBluetooth be used?</h1>
+        <div class="content">
+
+            <div class="horizontal">
+
+                <ul class="space-right">
+                    <li>Chrome 45+ on Mac and Chrome on Android</li>
+                    <li><a href="chrome://flags/#enable-web-bluetooth">chrome://flags/#enable-web-bluetooth</a></li>
+                    <li>Chrome 53 added <a
+                            href="https://github.com/jpchase/OriginTrials/blob/gh-pages/developer-guide.md">Origin
+                        Trials </a></li>
+                    <li>More details at <a
+                            href="https://github.com/WebBluetoothCG/web-bluetooth/blob/gh-pages/implementation-status.md">implementation-status</a>
+                        github page
+                    </li>
+                </ul>
+
+                <img src="assets/s1.png" width="270" height="480" alt="chrome://flags/#enable-web-bluetooth">
+            </div>
+
+
+        </div>
+    </neon-animatable>
+
+
+    <neon-animatable main  fit>
+        <h1 class="title">Bluetooth Low Energy 101</h1>
+        <div class="content">
+            <div class="horizontal">
+                <ul>
+                    <li>Generic Attribute Profile (GATT)</li>
+                    <li>
+                        Two device types <b>»Peripheral«</b> and <b>»Central«</b>
+                    </li>
+                    <li>
+                        <b>»Peripheral«</b> is the devices that offers a <b>Service</b>
+                        <ul>
+                            <li>
+                                e.g. the battery service of the light bulb
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>»Central«</b> is the device that connects to the service
+                        <ul>
+                            <li>
+                                e.g. this web browser
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        Bluetooth devices (peripherals) advertise different services that corresponds to functions the
+                        device offers
+                    </li>
+                    <li>
+                        Each service has one or many <b>»Characteristics«</b> that can be read, written or both
+                        <ul>
+                            <li>e.g. the light bulb has a characteristics to change the color of the led</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>»Descriptors«</b> describe or specify a characteristic value
+                        <ul>
+                            <li>e.g. that a characteristic is valid from 0 to 100</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">WebBluetooth API Intro</h1>
+        <div class="content">
+            <ul>
+                <li>User Gesture Required</li>
+                <li>
+                    navigator.bluetooth
+                </li>
+                <li>
+                    Web Bluetooth API relies heavily on JavaScript Promises
+                </li>
+            </ul>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Connect to a Device with the »battery_service«</h1>
+        <div class="content">
+            <ul>
+                <li>
+                    <a href="https://www.bluetooth.com/specifications/gatt/services">
+                        Bluetooth Service Spec
+                    </a>
+                </li>
+                <li>
+                    Battery Service org.bluetooth.service.battery_service 0x180F
+                </li>
+            </ul>
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                    ```js
+                    navigator.bluetooth.requestDevice({ filters: [{ services: [0x180F] }] })
+                      .then(device => { /* ... */ })
+                      .catch(error => { console.log(error) })
+                    ```
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Connect to a Device with the »battery_service«</h1>
+        <div class="content">
+            <ul>
+                <li>
+                    <a href="https://www.bluetooth.com/specifications/gatt/services">
+                        Bluetooth Service Spec
+                    </a>
+                </li>
+                <li>
+                    Battery Service org.bluetooth.service.battery_service 0x180F
+                </li>
+            </ul>
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                    ```js
+                    navigator.bluetooth.requestDevice({ filters: [{ services: ['battery_service'] }] })
+                    .then(device => { /* ... */ })
+                    .catch(error => { console.log(error); })
+                    ```
+
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Connect to a Device with the »battery_service«</h1>
+        <div class="content">
+            <h1>filter by name</h1>
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                    ```js
+                   navigator.bluetooth.requestDevice({
+                      filters: [{
+                        name: 'PLAYBULB'
+                      }],
+                      optionalServices: ['battery_service']
+                    })
+                    .then(device => { /* ... */ })
+                    .catch(error => { console.log(error) })
+                    ```
+
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Read a value (Bluetooth Characteristic)</h1>
+        <div class="content">
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                    ```js
+                    navigator.bluetooth.requestDevice({ filters: [{ services: ['battery_service'] }] })
+                    .then(device => device.gatt.connect())
+                    .then(server => {
+                      // Getting Battery Service...
+                      return server.getPrimaryService('battery_service')
+                    })
+                    .then(service => {
+                      // Getting Battery Level Characteristic...
+                      return service.getCharacteristic('battery_level')
+                    })
+                    .then(characteristic => {
+                    // Reading Battery Level...
+                      return characteristic.readValue();
+                    })
+                    .then(value => {
+                    // value is of type DataView [1] and the Battery is specified as an Uint8
+                      console.log('Battery percentage is ' + value.getUint8(0))
+                    })
+                    .catch(error => { console.log(error); });
+                    ```
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Write a value</h1>
+        <div class="content">
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                     ```js
+                    var red = 0xFF
+                    var green = 0x00
+                    var blue = 0x00
+                    navigator.bluetooth.requestDevice({ filters: [{ services: [0xFF02] }] })
+                    .then(device => device.gatt.connect())
+                    .then(server => {
+                      // Getting Color Service...
+                      return server.getPrimaryService(0xFF02)
+                    })
+                    .then(service => {
+                      // Getting Color Characteristic...
+                      return service.getCharacteristic(0xFFFC)
+                    })
+                    .then(characteristic => {
+                      // Writing the color ...
+                      let data = new Uint8Array([ 0x00, red, green, blue, 0x00, 0x00, 0x00, 0x00 ])
+                      return characteristic.writeValue(data)
+                    })
+                    .catch(error => { console.log(error); });
+                    ```
+
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Get notifications when values change</h1>
+        <div class="content">
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                    ```js
+                    navigator.bluetooth.requestDevice({ filters: [{ services: ['battery_service'] }] })
+                    .then(device => device.gatt.connect())
+                    .then(server => {
+                      // Getting Battery Service...
+                      return server.getPrimaryService('battery_service')
+                    })
+                    .then(service => {
+                      // Getting Battery Level Characteristic...
+                      return service.getCharacteristic('battery_level')
+                    })
+                    .then(characteristic => {
+                      // add a listener for the »characteristicvaluechanged« event
+                       characteristic.addEventListener('characteristicvaluechanged', /** function that handles updates **/);
+                      // Start Notifications on Battery Level...
+                      return characteristic.startNotifications()
+                    })
+                    .catch(error => { console.log(error); });
+                    ```
+
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Hack the Device</h1>
+        <div class="content">
+            <div class="horizontal">
+                <ul class="space-right">
+                    <li>
+                        nRF Connect
+                        <a href="https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp">Android</a>
+                        <a href="https://itunes.apple.com/de/app/nrf-connect/id1054362403">iOS</a>
+                    </li>
+                    <li>
+                        nRF Toolbox
+                        <a href="https://play.google.com/store/apps/details?id=no.nordicsemi.android.nrftoolbox">Android</a>
+                        <a href="https://itunes.apple.com/de/app/nrf-toolbox/id820906058">iOS</a>
+                    </li>
+                </ul>
+
+                <img src="assets/s2.png" width="270" height="480">
+            </div>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Hack the Device</h1>
+        <div class="content">
+            <div class="horizontal">
+                <img src="assets/s2.png" width="270" height="480">
+                <img src="assets/s3.png" width="270" height="480">
+                <img src="assets/s4.png" width="270" height="480">
+            </div>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Polymer Platinum-Bluetooth Elements</h1>
+        <div class="content">
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                    ```js
+                    connect: function () {
+                      this.$.bluetoothDevice.request()
+                        .then(_ => this.$.batteryCharacteristic.startNotifications())
+                    }
+
+                    _updateBattery: function (event, details) {
+                        this._setBattery(details.value.getUint8(0))
+                    },
+
+                    ```
+                    ```html
+                    <platinum-bluetooth-device
+                            services-filter='["battery_service"]'
+                            device="{{_device}}"
+                            id="bluetoothDevice">
+                        <platinum-bluetooth-service service="battery_service">
+                            <platinum-bluetooth-characteristic
+                                id="batteryCharacteristic"
+                                characteristic="battery_level"
+                                on-value-changed="_updateBattery">
+                            </platinum-bluetooth-characteristic>
+                        </platinum-bluetooth-service>
+                    </platinum-bluetooth-device>
+                    ```
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+    <neon-animatable main  fit>
+        <h1 class="title">Additional Resources</h1>
+        <div class="content">
+            <marked-element>
+                <div class="markdown-html"></div>
+                <script type="text/markdown">
+                <a href="https://github.com/thegecko/bleat">Bleat</a>
+                > Abstraction library for hiding differences in JavaScript BLE APIs
+
+                <a href="https://github.com/sandeepmistry/noble">noble</a>
+                > A Node.js BLE (Bluetooth Low Energy) central module
+
+                <a href="https://evothings.com/doc/index.html">EVO Things</a>
+                > A mobile application platform for the Internet of Things
+
+                <a href="https://googlechrome.github.io/samples/web-bluetooth/">Web Bluetooth Samples</a>
+
+                <a href="https://codelabs.developers.google.com/codelabs/candle-bluetooth/index.html">WebBluetooth Codelab</a>
+
+                <a href="http://www.playbulb.com/en/playbulb-candle-bluetooth-smart-led-flameless-candle.html">Playbulb Candle</a>
+
+                </script>
+            </marked-element>
+        </div>
+    </neon-animatable>
+
+
+</app-intro>
+
+</body>
+</html>

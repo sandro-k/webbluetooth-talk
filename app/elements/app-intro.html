@@ -1,0 +1,571 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selectable.html">
+
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animated-pages.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animatable.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animations.html">
+<link rel="import" href="../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+
+<!-- -->
+<dom-module id="app-intro">
+    <template>
+        <style>
+            :root {
+                /*--menu-padding: 1em;*/
+                --menu-background-default: rgba(0, 0, 0, 0.4);
+                /*--indicator-width: 18px;*/
+                /*--indicator-height: 18px;*/
+                /*--indicator-width-selected: 18px;*/
+                /*--indicator-height-selected: 18px;*/
+                /*--indicator-color: #CCCCCC;*/
+                /*--indicator-color-selected: #FFFFFF;*/
+            }
+
+            :host {
+                @apply(--layout-fit);
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+
+            /*[main]*/
+            :host ::content [main] {
+                /*padding: 1em;*/
+                overflow: hidden;
+            }
+
+            :host ::content p {
+                margin: 0.5em;
+                font-weight: 200;
+                @apply(--paper-font-common-base);
+            }
+
+            :host ::content img {
+                /*display: flex;*/
+                /*flex: 1;*/
+                max-width: 100%;
+                max-height: 50%;
+            }
+
+            .menu {
+                @apply(--layout);
+                @apply(--layout-fixed-bottom);
+                background: var(--menu-background, --menu-background-default);
+                padding: var(--menu-padding, 1em);
+            }
+
+            .indicator {
+                @apply(--layout);
+                @apply(--layout-center-center);
+                @apply(--layout-flex);
+            }
+
+            .indicator iron-selector {
+                @apply(--layout);
+            }
+
+            .indicator span {
+                background: var(--indicator-color, #CCCCCC);
+                border-radius: 100%;
+                display: block;
+                height: var(--indicator-height, 18px);
+                margin: 0 5px;
+                /*opacity: 0.6;*/
+                transform: scale(0.7);
+                width: var(--indicator-width, 18px);
+            }
+
+            .indicator span:hover {
+                background: var(--indicator-color-selected, #FFFFFF);
+                cursor: pointer;
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .indicator span.selected {
+                background: var(--indicator-color-selected, #FFFFFF);
+                opacity: 1;
+                transform: scale(1);
+                animation: bounce 0.5s 1 ease-in-out;
+            }
+
+            @keyframes bounce {
+                0% {
+                    transform: scale(0.7);
+                    -webkit-transform: scale(0.7)
+                }
+
+                100% {
+                    transform: scale(1);
+                    -webkit-transform: scale(1)
+                }
+            }
+
+            neon-animated-pages {
+                @apply(--layout-fit);
+                @apply(--layout-vertical);
+                @apply(--layout-center-center);
+            }
+
+            neon-animated-pages ::content [fit] {
+                @apply(--layout-fit);
+                @apply(--layout-vertical);
+                @apply(--layout-center-center);
+            }
+
+        </style>
+
+        <neon-animated-pages id="content"
+                             on-neon-animation-finish="_onNeonAnimationFinish"
+                             attrForSelected="{{attrForSelected}}"
+                             items="{{items}}"
+                             selected="{{selected}}"
+                             selected-item="{{selectedItem}}">
+
+            <content select="[main]"></content>
+            <content select="section"></content>
+        </neon-animated-pages>
+
+
+        <template if="[[!noIndicator]]">
+            <div class="menu">
+                <!-- every item above index 0 will be false -->
+                <template is=dom-if if=[[!selected]] restamp>
+                    <content on-tap="_firstTap" select="[first]"></content>
+                </template>
+
+                <!-- every item above index 0 will be true -->
+                <template is=dom-if if=[[selected]] restamp>
+                    <content id="previousContent" on-tap="_previousTap" select="[previous]"></content>
+                </template>
+
+
+                <div class="indicator">
+                    <iron-selector id="indicator" selected="[[selected]]" on-tap="_ironSelectorChanged"
+                                   selected-class="selected">
+                        <template is="dom-repeat" items="[[items]]">
+                            <span></span>
+                        </template>
+                    </iron-selector>
+                </div>
+
+
+                <!-- shown for every item but the last -->
+                <template is=dom-if if="[[!isLastItem(selected, items.length)]]" restamp>
+                    <content id="nextContent" on-click="_nextTap" select="[next]"></content>
+                </template>
+
+                <!-- shown at last item -->
+                <template is=dom-if if="[[isLastItem(selected, items.length)]]" restamp>
+                    <content on-tap="_lastTap" select="[last]"></content>
+                </template>
+
+            </div>
+        </template>
+
+    </template>
+
+    <script>
+        (function () {
+            'use strict';
+
+            Polymer({
+                is: 'app-intro',
+
+                keyBindings: {
+                    'left': '_previousTap',
+                    'right': '_nextTap',
+                },
+
+                listeners: {
+                    track: '_onTrack',
+                    down: '_downHandler',
+                },
+
+                behaviors: [
+                    // can't add behavior as it observes dom items
+                    // Polymer.IronSelectableBehavior,
+                    Polymer.IronA11yKeysBehavior
+                ],
+
+                properties: {
+                    animation: {
+                        type: Object,
+                        value: function () {
+                            return {
+                                entryAnimation: 'slide-from-right-animation',
+                                exitAnimation: 'slide-left-animation'
+                            }
+                        }
+                    },
+
+                    /**
+                     * Whether the user is dragging the drawer interactively.
+                     */
+                    dragging: {
+                        type: Boolean,
+                        value: false,
+                        readOnly: true,
+                        notify: true
+                    },
+
+                    getAnimationForTransition: {
+                        type: Function,
+                        value: function () {
+                            return this._getAnimationForTransition;
+                        }
+                    },
+
+                    /**
+                     * The list of items from which a selection can be made.
+                     */
+                    items: {
+                        type: Array,
+                        notify: true,
+                        value: function () {
+                            return [];
+                        }
+                    },
+
+                    /**
+                     * Gets or sets the selected element. The default is to use the index of the item.
+                     * @type {string|number}
+                     */
+                    selected: {
+                        type: Number,
+                        notify: true
+                    },
+
+                    /**
+                     * Returns the currently selected item.
+                     *
+                     * @type {?Object}
+                     */
+                    selectedItem: {
+                        type: Object,
+                        observer: "_selectedItemChanged",
+                        notify: true
+                    },
+
+                    wrap: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    noSwipe: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    peekThreshold: {
+                        type: Number,
+                        value: 0.2
+                    },
+
+                    keyEventTarget: {
+                        type: Object,
+                        value: function () {
+                            return document.body;
+                        }
+                    },
+
+                    boundKeys: {
+                        type: Array,
+                        value: function () {
+                            return Object.keys(this.keyBindings).join(' ').split(' ');
+                        }
+                    },
+
+                    noIndicator: {
+                        type: Boolean,
+                        value: false
+                    }
+                },
+
+                _nextTapListener: null,
+                _previousTapListener: null,
+
+                ready: function () {
+                },
+
+                attached: function () {
+                },
+
+                detached: function () {
+                },
+
+                _ironSelectorChanged: function (event, details) {
+
+                    if (event.target.parentElement.indexOf) {
+                        var nextIndex = event.target.parentElement.indexOf(event.target);
+
+                        this.select(nextIndex);
+                    }
+                },
+
+                select: function (nextIndex) {
+                    if (nextIndex >= 0 && nextIndex < this.items.length) {
+                        this._setNextAnimation(nextIndex);
+                        this.$.content.select(nextIndex);
+                    }
+                },
+
+                _previousTap: function () {
+                    if (!this.wrap && this.selected === 0) {
+                        return;
+                    }
+                    this.goPrevious();
+                },
+
+                _nextTap: function () {
+                    if (!this.wrap && this.selected === this.items.length - 1) {
+                        return;
+                    }
+                    this.goNext();
+                },
+
+                _getAnimationForTransition: function (selectedItemIndex, nextItemIndex) {
+                    if (nextItemIndex > selectedItemIndex) {
+                        return {
+                            entryAnimation: 'slide-from-right-animation',
+                            exitAnimation: 'slide-left-animation'
+                        }
+                    } else {
+                        return {
+                            entryAnimation: 'slide-from-left-animation',
+                            exitAnimation: 'slide-right-animation'
+                        }
+                    }
+                },
+
+                _getNextIndex: function (forward) {
+                    return forward ? this._getNextItemIndex() : this._getPreviousItemIndex();
+                },
+
+                _setUpNextAnimation: function (forward) {
+                    var nextItemIndex = this._getNextIndex(forward);
+                    this._setNextAnimation(nextItemIndex);
+                },
+
+                _setNextAnimation: function (nextItemIndex) {
+                    this.animation = this.getAnimationForTransition(this.selected, nextItemIndex);
+
+                    this.selectedItem.animationConfig = this.selectedItem.animationConfig || {};
+                    this.items[ nextItemIndex ].animationConfig = this.items[ nextItemIndex ].animationConfig || {};
+
+                    this.selectedItem.animationConfig[ 'exit' ] = [ {
+                        name: this.animation.exitAnimation,
+                        node: this.selectedItem
+                    } ];
+
+                    this.items[ nextItemIndex ].animationConfig[ 'entry' ] = [ {
+                        name: this.animation.entryAnimation,
+                        node: this.items[ nextItemIndex ]
+                    } ];
+
+                },
+
+                goPrevious: function (animation) {
+                    if (!animation) {
+                        this._setUpNextAnimation(false);
+                    }
+                    this.$.content.selectPrevious();
+                },
+
+                goNext: function (animation) {
+                    if (!animation) {
+                        this._setUpNextAnimation(true);
+                    }
+                    this.$.content.selectNext();
+                },
+
+                _onTrack: function (event) {
+
+                    switch (event.detail.state) {
+                        case 'start':
+                            this._trackStart(event);
+                            break;
+                        case 'track':
+                            this._trackX(event);
+                            break;
+                        case 'end':
+                            this._trackEnd(event);
+                            break;
+                    }
+
+                },
+
+                _downHandler: function () {
+                    if (!this.dragging) {
+                        // cancel selection
+                        event.preventDefault();
+                    }
+                },
+
+                _swipeAllowed: function () {
+                    return !this.noSwipe;
+                },
+
+                _trackX: function (event) {
+                    var dx;
+                    if (this.dragging) {
+                        dx = event.detail.dx;
+
+                        // stop moving elements if we would wrap
+                        if ((this._wouldWrap(dx) && !this.wrap) || this.width < Math.abs(dx)) {
+                            return;
+                        }
+
+                        this._moveDrawer(dx);
+                    }
+                },
+
+                _wouldWrap: function (dx) {
+                    return (this.selected === 0 && dx > 0) || (this.selected === this.items.length - 1 && dx < 0)
+                },
+
+                _trackEnd: function (event) {
+                    if (this.dragging) {
+
+                        this._setDragging(false);
+
+                        var motion = event.detail.dx;
+                        if (this._wouldWrap(motion) && !this.wrap) {
+                            return;
+                        }
+
+                        var nextItem = this.items[ motion > 0 ? this._getPreviousItemIndex() : this._getNextItemIndex() ];
+                        nextItem.animationConfig = nextItem.animationConfig || {};
+                        this.selectedItem.animationConfig = this.selectedItem.animationConfig || {};
+
+                        if (this.width * this.peekThreshold < Math.abs(motion)) {
+
+                            if (motion > 0) {
+                                // swipe from left to right
+                                nextItem.animationConfig.entry
+                                        = [ this._nodeAnimationConfig(nextItem, (-1 * (this.width - motion)), 'none') ];
+                                this.selectedItem.animationConfig.exit
+                                        = [ this._nodeAnimationConfig(this.selectedItem, motion, 'translateX(100%)') ];
+
+                                this.goPrevious(true);
+
+                            } else {
+                                // swipe is form right to left
+                                nextItem.animationConfig.entry = [ this._nodeAnimationConfig(nextItem, this.width + motion, 'none') ];
+                                this.selectedItem.animationConfig.exit
+                                        = [ this._nodeAnimationConfig(this.selectedItem, motion, 'translateX(-100%)') ];
+
+                                this.goNext(true);
+                            }
+
+                        } else {
+
+                            if (motion > 0) {
+                                // peek swipe from left to right
+
+                                nextItem.animationConfig.exit
+                                        = [ this._nodeAnimationConfig(nextItem, (-1 * (this.width - motion)), (-1 * (this.width))) ];
+
+                            } else {
+                                // peek swipe is form right to left
+                                nextItem.animationConfig.exit = [ this._nodeAnimationConfig(nextItem, this.width + motion, this.width) ];
+                            }
+
+                            this.selectedItem.animationConfig.entry = [ this._nodeAnimationConfig(this.selectedItem, motion, 'none') ];
+                            this.$.content.animationConfig = [];
+                            this.$.content.animationConfig.push({ animatable: this.selectedItem, type: 'entry' });
+                            this.$.content.animationConfig.push({ animatable: nextItem, type: 'exit' });
+                            this.$.content.playAnimation();
+                        }
+                    }
+                },
+
+                _nodeAnimationConfig: function (node, transformFrom, transformTo) {
+                    var transformToTmp;
+                    if (typeof transformTo === 'string') {
+                        transformToTmp = transformTo;
+                    } else {
+                        transformToTmp = 'translateX(' + transformTo + 'px)';
+                    }
+                    return {
+                        name: 'transform-animation',
+                        transformFrom: 'translateX(' + transformFrom + 'px)',
+                        transformTo: transformToTmp,
+                        node: node,
+                    }
+                },
+
+                _getNextItemIndex: function () {
+                    return (Number((this.selected)) + 1) % this.items.length;
+                },
+
+                _getPreviousItemIndex: function () {
+                    var length = this.items.length;
+                    return (Number((this.selected)) - 1 + length) % length;
+                },
+
+                _moveDrawer: function (translateX) {
+                    var otherItem;
+                    if (translateX > 0) {
+                        this.transform(this._transformForTranslateX(translateX), this.selectedItem);
+
+                        otherItem = this.items[ this._getPreviousItemIndex() ];
+                        otherItem.style.cssText = 'display:flex !important';
+
+                        this.transform(this._transformForTranslateX(-this.width + translateX), otherItem);
+
+                    } else {
+                        this.transform(this._transformForTranslateX(translateX), this.selectedItem);
+
+                        otherItem = this.items[ this._getNextItemIndex() ];
+                        otherItem.style.cssText = 'display:flex !important';
+
+                        this.transform(this._transformForTranslateX(this.width + translateX), otherItem);
+                    }
+                },
+
+                _transformForTranslateX: function (translateX) {
+                    return 'translateX(' + translateX + 'px)';
+                },
+
+                _trackStart: function (event) {
+                    if (this._swipeAllowed()) {
+                        this._setDragging(true);
+                        this.width = this.selectedItem.offsetWidth;
+                    }
+                },
+
+                _onNeonAnimationFinish: function () {
+                    // reset all items to default position by removing the transition and any css style set directly on the element
+                    this.items.forEach(function (item) {
+                        item.style.cssText = '';
+                        Polymer.Base.transform(null, item);
+                    });
+                },
+
+                _firstTap: function () {
+                    this.fire("app-intro-first");
+                },
+
+                _lastTap: function () {
+                    this.fire("app-intro-last");
+                },
+
+                isLastItem: function (index, length) {
+                    return index === length - 1;
+                },
+
+                _selectedItemChanged: function (selectedItem) {
+                    if (selectedItem && selectedItem.playSlideAnimation) {
+                        selectedItem.playSlideAnimation();
+                    }
+                }
+
+            });
+        })();
+
+
+    </script>
+</dom-module>
