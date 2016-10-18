@@ -3,9 +3,14 @@
     "standard"
   ],
   "parser": "babel-eslint",
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+    }
+  },
   "globals": {
-    "CustomElements": true,
-    "HTMLImports": true,
-    "Polymer": true
+    "CustomElements": false,
+    "HTMLImports": false,
+    "Polymer": false
   }
 }
